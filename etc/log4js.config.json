@@ -1,0 +1,42 @@
+{
+  "appenders": [
+    {
+      "type": "clustered",
+      "appenders": [
+        {
+          "type": "console"
+        },
+        {
+          "type": "dateFile",
+          "filename": "./logs/app",
+          "pattern": ".yyyy-MM-dd.log",
+          "alwaysIncludePattern": true
+        },
+        {
+          "type": "categoryFilter",
+          "exclude": [
+            "app",
+            "console"
+          ],
+          "appender": {
+            "type": "dateFile",
+            "filename": "logs/http",
+            "pattern": ".yyyy-MM-dd.log",
+            "alwaysIncludePattern": true
+          }
+        },
+        {
+          "type": "logLevelFilter",
+          "level": "ERROR",
+          "appender": {
+            "type": "dateFile",
+            "filename": "./logs/errors",
+            "pattern": ".yyyy-MM-dd.log",
+            "alwaysIncludePattern": true
+          }
+        }
+      ]
+    }
+  ],
+  "replaceConsole": true
+}

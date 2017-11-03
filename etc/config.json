@@ -1,0 +1,42 @@
+{
+  "url_base": "/v1",
+  "protocols": {
+    "http": {
+      "port": 3000
+    }
+  },
+  "db": {
+    "conn": {
+      "host": "10.123.5.86",
+      "port": 3306,
+      "user": "root",
+      "password": "itcloud@123",
+      "database": "prod_visitor_dev"
+    },
+    "file": "test.db"
+  },
+  "redis": {
+    "host": "192.168.232.128",
+    "port": "6379",
+    "db": 0,
+    "prefix":"sy_sales:",
+    "retry_strategy": {
+      "query_timeout": 1000,
+      "attempt": 10
+    }
+  },
+  "session_secret": "",
+  "hosturl":"http://127.0.0.1:4000",
+  "debug" : "true",
+  "node_test": "true",
+  "title" : "sales",
+  "domain" : "http://127.0.0.1:3000",
+  "domainname" : "sales",
+  "session_cfg":{
+    "name": "skey",
+    "secret": "tencent@123",
+    "saveUninitialized": false,
+    "resave": false,
+    "cookie":{ "maxAge": 1800000 }
+  }
+}
