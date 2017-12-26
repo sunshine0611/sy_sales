@@ -28,6 +28,93 @@ exports.insertModel = function(table, entity, identity){
   var stmt = db.prepare(sql)
   stmt.run(vals)
   db.close()
+  defer.resolve({code:1, data:null})
+  return defer.promise
+}
+
+exports.replaceBatchModel = function(table, entitys, identity, key){
+  var defer = Q.defer()
+  if (tools.isNullOrEmpty(table)){
+    return defer.reject("table is required")
+  }
+  if (tools.isNullOrEmpty(entitys)){
+    return defer.reject("entitys is required")
+  }
+  try{
+    var db = openDb()
+    var keys = "";
+    for(var i = 0; i < entitys.length; i++){
+      keys += "'" + entitys[i][key] + "',";
+    }
+    keys = tools.trim(keys, ",");
+    db.serialize(function() {
+      db.all(`select * from ${table} where ${key} in (${keys}) `, function(err, res){
+        if (err){
+          return defer.reject(err)
+        }
+        var oldData = {};
+        for(var i = 0; i < res.length; i++){
+          oldData[res[i][key]] = res[i];
+        }
+        var updStmt = db.prepare(getUpdateSql(table, entitys[0], identity, key))
+        var insStmt = db.prepare(getInsertSql(table, entitys[0], identity, key))
+        for(var i = 0; i < entitys.length; i++){
+          var entity = entitys[i];
+          if (oldData[entity[key]]){ //update
+            updStmt.run(getUpdateVal(entity, identity, key))
+          }else{ // insert
+            insStmt.run(getInsertVal(entity, identity))
+          }
+        }
+        updStmt.finalize()
+        insStmt.finalize()
+        db.close()
+        defer.resolve({code:1, data:null})
+      })
+    })
+    
+  }catch(e){
+    return defer.reject("update error")
+  }
+  return defer.promise
+}
+
+var getUpdateSql = function(table, entity, identity, key){
+  var stmt = `update ${table} set `;
+  for(var field in entity){
+    if (field == identity || field == key)continue;
+    stmt += ` ${field} = ?,`;
+  }
+  stmt = tools.trim(stmt, ',') + ` where ${key} = ?`;
+  return stmt;
+}
+var getUpdateVal = function(entity, identity, key){
+  var vals = [];
+  for(var field in entity){
+    if (field == identity || field == key)continue;
+    vals.push(entity[field]);
+  }
+  vals.push(entity[key]);
+  return vals;
+}
+var getInsertSql = function(table, entity, identity, key){
+  var stmt = `insert into ${table}(`;
+  var vals = "";
+  for(var field in entity){
+    if (field == identity)continue;
+    stmt += ` ${field},`;
+    vals += " ?,";
+  }
+  stmt = tools.trim(stmt, ',') + ') values(' + tools.trim(vals, ',') + ');';
+  return stmt;
+}
+var getInsertVal = function(entity, identity){
+  var vals = [];
+  for(var field in entity){
+    if (field == identity)continue;
+    vals.push(entity[field])
+  }
+  return vals;
 }
 
 exports.updateModel = function(table, entity, columns, key){
