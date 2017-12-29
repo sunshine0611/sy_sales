@@ -173,6 +173,19 @@ exports.getAll = function(table){
   return defer.promise
 }
 
+exports.getWhere = function(table, where, vals){
+  var defer = Q.defer()
+  if (tools.isNullOrEmpty(table)){
+    return defer.reject(tools.createError("table should not be null"))
+  }
+  var db = openDb()
+  db.all(`select * from ${table} ` + (tools.isNullOrEmpty(where) ? '' : where), vals, function(err, res){
+    return defer.resolve( !err ? res : err )
+  })
+  db.close()
+  return defer.promise
+}
+
 exports.getByPage = function(table, where, vals, pageIndex, pageSize, orderBy){
   var defer = Q.defer()
   if (tools.isNullOrEmpty(table)){

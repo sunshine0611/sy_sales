@@ -4,7 +4,7 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var bodyParser = require('body-parser');
 var config = require('./etc/config.json');
-//var Loader = require('loader');
+var Loader = require('loader');
 var _ = require('lodash');
 
 // global variables
@@ -23,7 +23,8 @@ app.engine('html', require('ejs-mate'));
 
 // set static, dynamic helpers
 _.extend(app.locals, {
-  config: config
+  config: config,
+  Loader: Loader
 });
 
 

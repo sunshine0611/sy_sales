@@ -10,9 +10,12 @@ if (url_base && url_base.length > 0 && url_base[url_base.length - 1] === '/')
 // init database
 dbDal.initDB();
 
-router.get('/', function (req, res, next) {res.render('index')});
+router.get('/', function (req, res, next) {res.render('index')})
 
-router.use('/home', require('../controller/home'));
-router.use('/goods', require('../controller/goods'));
+router.use('/home', require('../controller/home'))
+router.use('/h5', require('../controller/h5'))
+router.use('/api/goods', require('../controller/goods'))
+router.use('/api/guest', require('../controller/guest'))
+router.use('/api/vendor', require('../controller/vendor'))
 
 module.exports = router

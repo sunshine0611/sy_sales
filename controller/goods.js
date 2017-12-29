@@ -15,9 +15,18 @@ router.get('/setUserName',function(req, res, next){
   })
 })
 
-router.post('/UpdateGoods', function(req, res, next){
+router.post('/SyncGoods', function(req, res, next){
   var datas = req.body;
+  for(var i = 0; i < datas.length; i++) datas[i].LastUpdateTime = new Date();
   dbtool.replaceBatchModel('Goods', datas, 'ID', 'GoodsCode').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
+router.get('/LastUpdateGoodss', function(req, res, next){
+  dbtool.getWhere('Goods', 'LastUpdateTime >= ?', req.params.lasttime).then(ret=>{
     res.send(ret)
   }).catch(err=>{
     res.send(err)
