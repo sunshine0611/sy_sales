@@ -9,24 +9,27 @@
     <div class="input-group">
       <input id='txtSearch' type="text" placeholder="Search" onkeydown='SearchKeyDown(event)' />
     </div>
-    <ul class="table-view">
-      {% for guest in guests %}
-      <li class="table-view-cell">
-        <a class="push-right">
-          <span class="pull-left icon icon-person" style="color:#3071a9;"></span>
-          <strong>{{ guest.GuestName }}</strong>
-        </a>
-      </li>
-      <li class="table-view-cell table-view-cell-content">
-        <span class="spanblock"><a class="btn-link" href="tel:{{ guest.Phone }}">电话：{{ guest.Phone }}</a></span>
-        <span class="spanblock">性别：{{ guest.Sex }}</span>
-        <span class="spanblock">地址：{{ guest.Address }}</span>
-      </li>
-      {% endfor %}
-    </ul>
+    <ul id="guestList" class="table-view"></ul>
     <span id='last'>&nbsp;</span>
+
+<script id="tpl-guestlst-item" type="text/html" >
+{{each guests as guest i}}
+<li class="table-view-cell">
+  <a class="push-right">
+    <span class="pull-left icon icon-person" style="color:#3071a9;"></span>
+    <strong>{{ guest.GuestName }}</strong>
+  </a>
+</li>
+<li class="table-view-cell table-view-cell-content">
+  <span class="spanblock"><a class="btn-link" href="tel:{{ guest.Phone }}">电话：{{ guest.Phone }}</a></span>
+  <span class="spanblock">性别：{{ guest.Sex }}</span>
+  <span class="spanblock">地址：{{ guest.Address }}</span>
+</li>
+{{/each}}
+</script>
+<script id="pageScript" type="text/javascript">
+  var guests = [{GuestName:"sinsun", Phone:"123123234", Sex:"nan", Address:""}]
+  document.getElementById("guestList").innerHTML = template("tpl-guestlst-item", {guests:guests});
+</script>
   </div>
 </div>
-<script type="text/javascript">
-  var guests = [{GuestName:"sinsun", Phone:"123123234", Sex:"nan", Address:""}]
-</script>
