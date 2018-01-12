@@ -14,6 +14,10 @@ router.post('/SyncGuests', function(req, res, next){
   })
 })
 
+router.get('/getGuests', function(req, res, next){
+  res.send([{GuestName:"sinsun", Phone:"123123234", Sex:"nan", Address:""}])
+})
+
 router.get('/LastUpdateGuests', function(req, res, next){
   dbtool.getWhere('Guest', 'LastUpdateTime >= ?', req.params.lasttime).then(ret=>{
     res.send(ret)

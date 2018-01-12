@@ -28,8 +28,14 @@
 {{/each}}
 </script>
 <script id="pageScript" type="text/javascript">
-  var guests = [{GuestName:"sinsun", Phone:"123123234", Sex:"nan", Address:""}]
-  document.getElementById("guestList").innerHTML = template("tpl-guestlst-item", {guests:guests});
+  $.ajax({
+    url: "/api/guest/getGuests",
+    success:function(data){
+      $("#guestList").append(template("tpl-guestlst-item", {guests:data}));
+    },
+    error:function(){
+    }
+  })
 </script>
   </div>
 </div>

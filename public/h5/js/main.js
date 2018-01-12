@@ -9,6 +9,5 @@ function onPushEvent(e){
     requestUrl = e.detail.state.url;
   }
 	alert(requestUrl)*/
-  var scripts = document.getElementById("pageScript");
-  eval(scripts.innerHTML);
+  eval($("#pageScript").text());
 }
