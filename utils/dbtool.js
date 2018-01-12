@@ -1,8 +1,51 @@
 var config = require('../etc/config.json');
+var dbscriptCfg = require('../etc/dbscript.json')
 var comment = require('moment');
 var Q = require('q');
 var tools = require('./tools');
-var sqlite3 = require("sqlite3").verbose();
+var mysql = require('mysql')
+var poolCfg = Object.assign({
+  connectionLimit: 10,
+  multipleStatements: true,
+  charset: 'utf8',
+  collate: 'utf8_general_ci'
+}, config.db.conn)
+var pool = mysql.createPool(poolCfg)
+
+pool.on('connection', function(connection){
+  //console.log(`[pid: ${process.pid}]Connected as id ${connection.threadId}`)
+})
+pool.on('release', function(connection){
+  //console.log(`[pid: ${process.pid}]Connection ${connection.threadId} released`)
+})
+
+var _this = this;
+var run = function(sql, vals, cb){
+  pool.getConnection(function(err, conn){
+    if(err){
+      if(conn) conn.release();
+      cb && cb(err);
+    } else{
+      conn.query({sql:sql, values: vals, timeout: 60000}, function(err, result, fields){
+        conn.release()
+        cb && cb(err, result, fields)
+      })
+    }
+  })
+}
+
+exports.initDB = function(){
+  if (dbscriptCfg){
+    for(var i = 0; i < dbscriptCfg.tables.length; i++ ){
+      var tableInfo = dbscriptCfg.tables[i];
+      if (tableInfo.create_sql){
+        run(tableInfo.create_sql, [], function(err, result){
+          if (err) console.log(`init table err:` + err)
+        })
+      }
+    }
+  }
+}
 
 exports.insertModel = function(table, entity, identity){
   var defer = Q.defer()
@@ -24,11 +67,9 @@ exports.insertModel = function(table, entity, identity){
   columns = columns.replace(/,$/g, "");
   valsString = valsString.replace(/,$/g, "");
   sql += columns + ") values (" + valsString + ")";
-  var db = openDb()
-  var stmt = db.prepare(sql)
-  stmt.run(vals)
-  db.close()
-  defer.resolve({code:1, data:null})
+  run(sql, vals, function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
+  })
   return defer.promise
 }
 
@@ -41,38 +82,45 @@ exports.replaceBatchModel = function(table, entitys, identity, key){
     return defer.reject("entitys is required")
   }
   try{
-    var db = openDb()
-    var keys = "";
-    for(var i = 0; i < entitys.length; i++){
-      keys += "'" + entitys[i][key] + "',";
-    }
-    keys = tools.trim(keys, ",");
-    db.serialize(function() {
-      db.all(`select * from ${table} where ${key} in (${keys}) `, function(err, res){
-        if (err){
-          return defer.reject(err)
-        }
-        var oldData = {};
-        for(var i = 0; i < res.length; i++){
-          oldData[res[i][key]] = res[i];
-        }
-        var updStmt = db.prepare(getUpdateSql(table, entitys[0], identity, key))
-        var insStmt = db.prepare(getInsertSql(table, entitys[0], identity, key))
-        for(var i = 0; i < entitys.length; i++){
-          var entity = entitys[i];
-          if (oldData[entity[key]]){ //update
-            updStmt.run(getUpdateVal(entity, identity, key))
-          }else{ // insert
-            insStmt.run(getInsertVal(entity, identity))
+    pool.getConnection(function(conErr, conn){
+      if(conErr){
+        if(conn) conn.release()
+        return defer.reject(conErr)
+      } else{
+        conn.beginTransaction(function(errTrans){
+          if (errTrans){
+            conn.release()
+            return defer.reject(errTrans)
           }
-        }
-        updStmt.finalize()
-        insStmt.finalize()
-        db.close()
-        defer.resolve({code:1, data:null})
-      })
+          var insSql = getInsertSql(table, entitys[0], identity, key)
+          var updSql = getUpdateSql(table, entitys[0], identity, key)
+
+          var queryOne = function(entitys, idx){
+            var vals = getInsertVal(entitys[idx], identity, key)
+            conn.query(insSql + ' on duplicate key ' + updSql , vals, function(errQ, info){
+              if (errQ){
+                conn.rollback(function(){ conn.release(); return defer.reject(errQ) })
+              }
+              else{
+                if (idx < entitys.length - 1){
+                  queryOne(entitys, idx + 1)
+                }else{
+                  conn.commit(function(errCom){
+                    if (errCom)
+                      conn.rollback(function(){ conn.release(); return defer.reject(errCom) })
+                    else{
+                      conn.release()
+                      return defer.resolve({code:1, data:null})
+                    }
+                  })
+                }
+              }
+            })
+          }
+          queryOne(entitys, 0)
+        })
+      }
     })
-    
   }catch(e){
     return defer.reject("update error")
   }
@@ -80,12 +128,12 @@ exports.replaceBatchModel = function(table, entitys, identity, key){
 }
 
 var getUpdateSql = function(table, entity, identity, key){
-  var stmt = `update ${table} set `;
+  var stmt = `update `;
   for(var field in entity){
     if (field == identity || field == key)continue;
-    stmt += ` ${field} = ?,`;
+    stmt += ` ${field} = values(${field}),`;
   }
-  stmt = tools.trim(stmt, ',') + ` where ${key} = ?`;
+  stmt = tools.trim(stmt, ',');
   return stmt;
 }
 var getUpdateVal = function(entity, identity, key){
@@ -105,7 +153,7 @@ var getInsertSql = function(table, entity, identity, key){
     stmt += ` ${field},`;
     vals += " ?,";
   }
-  stmt = tools.trim(stmt, ',') + ') values(' + tools.trim(vals, ',') + ');';
+  stmt = tools.trim(stmt, ',') + ') values(' + tools.trim(vals, ',') + ')';
   return stmt;
 }
 var getInsertVal = function(entity, identity){
@@ -118,7 +166,6 @@ var getInsertVal = function(entity, identity){
 }
 
 exports.updateModel = function(table, entity, columns, key){
-  var db = openDb()
   var defer = Q.defer()
   var sql = "update " + table + " set ";
   var sqlSet = "", vals = [];
@@ -135,11 +182,9 @@ exports.updateModel = function(table, entity, columns, key){
   sqlSet = sqlSet.replace(/,$/g, "")
   sql += sqlSet + " where " + key + " = ?"
   vals.push(entity[key])
-  db.run(sql, vals, function(err, res){
-    return defer.resolve( !err ? res : err )
+  run(sql, vals, function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
-
-  db.close()
   return defer.promise
 }
 
@@ -151,12 +196,10 @@ exports.getEntityById = function(table, val, key){
   if (tools.isNullOrEmpty(val)){
     return defer.reject(tools.createError("val should not be null"))
   }
-  var db = openDb()
-  if (isNullOrEmpty(key)) key = "id"
-  db.all("select * from " + table + " where " + key + " = ?", function(err, res){
-    return defer.resolve( !err ? res : err )
+  if (tools.isNullOrEmpty(key)) key = "id"
+  run(`select * from ${table} where ${key} = ?`, [val], function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
-  db.close()
   return defer.promise
 }
 
@@ -165,11 +208,9 @@ exports.getAll = function(table){
   if (tools.isNullOrEmpty(table)){
     return defer.reject(tools.createError("table should not be null"))
   }
-  var db = openDb()
-  db.all("select * from " + table, function(err, res){
-    return defer.resolve( !err ? res : err )
+  run(`select * from ${table} `, [], function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
-  db.close()
   return defer.promise
 }
 
@@ -178,11 +219,9 @@ exports.getWhere = function(table, where, vals){
   if (tools.isNullOrEmpty(table)){
     return defer.reject(tools.createError("table should not be null"))
   }
-  var db = openDb()
-  db.all(`select * from ${table} ` + (tools.isNullOrEmpty(where) ? '' : where), vals, function(err, res){
-    return defer.resolve( !err ? res : err )
+  run(`select * from ${table} ` + (tools.isNullOrEmpty(where) ? '' : where), [vals], function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
-  db.close()
   return defer.promise
 }
 
@@ -195,14 +234,8 @@ exports.getByPage = function(table, where, vals, pageIndex, pageSize, orderBy){
   pageIndex = +pageIndex;
   if (pageIndex < 1) pageIndex = 1
   var start = pageSize * (pageIndex - 1)
-  var db = openDb()
-  db.all("select * from " + table + (tools.isNullOrEmpty(where) ? "" : " where " + where) + (tools.isNullOrEmpty(orderBy) ? "" : " order by " + orderBy) + " limit " + start + ", " + pageSize, vals, function(err, res){
-    return defer.resolve( !err ? res : err )
+  run("select * from " + table + (tools.isNullOrEmpty(where) ? "" : " where " + where) + (tools.isNullOrEmpty(orderBy) ? "" : " order by " + orderBy) + " limit " + start + ", " + pageSize, vals, function(err, result, fields){
+    return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
-  db.close()
   return defer.promise
-}
-
-function openDb(){
-  return new sqlite3.Database(config.db.file)
 }

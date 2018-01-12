@@ -7,11 +7,11 @@
   },
   "db": {
     "conn": {
-      "host": "10.123.5.86",
+      "host": "192.168.232.128",
       "port": 3306,
       "user": "root",
-      "password": "itcloud@123",
-      "database": "prod_visitor_dev"
+      "password": "sinsun_db",
+      "database": "sydb"
     },
     "file": "sales.db"
   },

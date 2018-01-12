@@ -15,6 +15,46 @@ router.get('/setUserName',function(req, res, next){
   })
 })
 
+router.post('/addGoods',function(req, res, next){
+  dbtool.insertModel('Goods', req.body, 'ID', 'GoodsCode').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
+router.post('/updateGoods',function(req, res, next){
+  dbtool.updateModel('Goods', req.body, ['ModelName','ShortName','TypeCode','DistrictNo'], 'GoodsCode').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
+router.get('/getGoods',function(req, res, next){
+  dbtool.getAll('Goods').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
+router.get('/getGoods/:id',function(req, res, next){
+  dbtool.getEntityById('Goods', req.params.id ,'GoodsCode').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
+router.get('/getGoods/:pid/:psize',function(req, res, next){
+  dbtool.getByPage('Goods', '', [], req.params.pid, req.params.psize, 'id desc').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
 router.post('/SyncGoods', function(req, res, next){
   var datas = req.body;
   for(var i = 0; i < datas.length; i++) datas[i].LastUpdateTime = new Date();

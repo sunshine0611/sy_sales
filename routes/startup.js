@@ -1,14 +1,14 @@
 var express = require('express')
     , router = express.Router();
 var config = require('../etc/config.json');
-var dbDal = require('../dal/db_dal')
+var dbtool = require('../utils/dbtool')
 
 var url_base = config.url_base;
 if (url_base && url_base.length > 0 && url_base[url_base.length - 1] === '/')
     url_base = url_base.substr(0, url_base.length - 1);
 
 // init database
-dbDal.initDB();
+dbtool.initDB();
 
 router.get('/', function (req, res, next) {res.render('index')})
 
