@@ -2,7 +2,7 @@
   "tables":[
     {
       "table_name":"Goods",
-      "create_sql":"create table if not exists Goods (ID int(11) not null auto_increment, GoodsCode varchar(50) not null, ModelName varchar(50), ShortName varchar(50), TypeCode varchar(50), DistrictNo int, PurchasePrice decimal(8,2), PurchaseDiscount decimal(8,2), ReturnPrice decimal(8,2), FreightFee decimal(8,2), PackQuantity int, LeastPackQuantity int, Description varchar(500), EnableFlag int, LastUpdateTime datetime, primary key(`ID`), unique key `idx_Goods_GoodsCode` (`GoodsCode`))",
+      "create_sql":"create table if not exists Goods (ID int(11) not null auto_increment, GoodsCode varchar(50) not null, ModelName varchar(50), ShortName varchar(50), TypeCode varchar(50), BrandCode varchar(50), DistrictNo int, PurchasePrice decimal(8,2), PurchaseDiscount decimal(8,2), ReturnPrice decimal(8,2), FreightFee decimal(8,2), PackQuantity int, LeastPackQuantity int, Description varchar(500), EnableFlag int, UpdateDate datetime, primary key(`ID`), unique key `idx_Goods_GoodsCode` (`GoodsCode`))",
       "insert_sql":"",
       "update_sql":"",
       "query_page_sql":"",
@@ -10,7 +10,7 @@
     },
     {
       "table_name":"Guest",
-      "create_sql":"create table if not exists Guest (ID int(11) not null auto_increment, GuestCode varchar(50) not null unique, GuestName varchar(100) not null, Alias varchar(50), GuestType varchar(20), DeptCode varchar(50), DeptName varchar(50), ListColor varchar(20), Sex varchar(10), Phone varchar(300), Phone2 varchar(300), TelPhone varchar(300), TelPhone2 varchar(300), PhoneList varchar(500), FreightStation varchar(100), FreightMode int, Remark varchar(500), EnableFlag int, LastUpdateTime datetime, primary key(`ID`), unique key `idx_Guest_GuestCode` (`GuestCode`))",
+      "create_sql":"create table if not exists Guest (ID int(11) not null auto_increment, GuestCode varchar(50) not null, GuestName varchar(100) not null, Alias varchar(50), DeptCode varchar(50), DeptName varchar(50), ListColor varchar(20), Sex varchar(10), NativePlace varchar(20), Market varchar(20), Telephone varchar(300), MobilePhone varchar(300), Fax varchar(100), Email varchar(200), WebSite varchar(200), QQ varchar(100), Weibo varchar(100), Wechat varchar(100), RealStore varchar(100), WebStore varchar(100), Address varchar(200), Post varchar(20), BankInfo varchar(200), FreightStation varchar(100), FreightMode int, Relation varchar(300), InClination varchar(300), BusinessScope varchar(200), Remark varchar(500), EnableFlag int, UpdateDate datetime, primary key(`ID`), unique key `idx_Guest_GuestCode` (`GuestCode`))",
       "insert_sql":"",
       "update_sql":"",
       "query_page_sql":"",
@@ -18,7 +18,23 @@
     },
     {
       "table_name":"Vendor",
-      "create_sql":"create table if not exists Vendor (ID int(11) not null auto_increment, VendorCode varchar(50) not null unique, VendorName varchar(100) not null, VendorType int, ListColor varchar(20), LegalPerson varchar(50), Contact varchar(50), Tel varchar(300), ContactExtra varchar(300), QQ varchar(300), FaxTel varchar(300), Email varchar(500), WebSite varchar(300), Address varchar(300), BusinessScope varchar(500), Description varchar(500), FregithWay int, FreightCharge decimal(8,2), EnableFlag int, LastUpdateTime datetime, primary key(`ID`), unique key `idx_Vendor_VendorCode` (`VendorCode`))",
+      "create_sql":"create table if not exists Vendor (ID int(11) not null auto_increment, VendorCode varchar(50) not null, VendorName varchar(100) not null, VendorType int, ListColor varchar(20), LegalPerson varchar(50), Telephone varchar(300), MobilePhone varchar(300), Fax varchar(100), Email varchar(200), WebSite varchar(200), QQ varchar(100), Weibo varchar(200), Wechat varchar(200), WebStore varchar(300), Address varchar(300), PostCode varchar(20), BankInfo varchar(500), FreightStation varchar(100), FreightWay int, FreightCharge decimal(8,2), BusinessScope varchar(500), Description varchar(500), ICP varchar(100), EnableFlag int, UpdateDate datetime, primary key(`ID`), unique key `idx_Vendor_VendorCode` (`VendorCode`))",
+      "insert_sql":"",
+      "update_sql":"",
+      "query_page_sql":"",
+      "query_all_sql":""
+    },
+    {
+      "table_name":"GoodsType",
+      "create_sql":"create table if not exists GoodsType (ID int(11) not null auto_increment, ParentCode varchar(50), TypeCode varchar(50) not null, TypeName varchar(200) not null, TypeOrder int, TypeProperty int(4), TypeLevel int(4), Description varchar(500), EnableFlag int, UpdateDate datetime, primary key(`ID`), unique key `idx_GoodsType_TypeCode` (`TypeCode`))",
+      "insert_sql":"",
+      "update_sql":"",
+      "query_page_sql":"",
+      "query_all_sql":""
+    },
+    {
+      "table_name":"Brand",
+      "create_sql":"create table if not exists Brand (ID int(11) not null auto_increment, BrandCode varchar(50) not null, VendorCode varchar(50) null, BrandName varchar(100) not null, BrandOrder int, Description varchar(500), EnableFlag int, UpdateDate datetime, primary key(`ID`), unique key `idx_Brand_BrandCode` (`BrandCode`))",
       "insert_sql":"",
       "update_sql":"",
       "query_page_sql":"",

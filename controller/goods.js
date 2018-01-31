@@ -31,8 +31,8 @@ router.post('/updateGoods',function(req, res, next){
   })
 })
 
-router.get('/getGoods',function(req, res, next){
-  dbtool.getAll('Goods').then(ret=>{
+router.post('/getSyncGoods',function(req, res, next){
+  dbtool.getWhere('Goods', "LastUpdateTime >= str_to_date(?, '%Y-%m-%d %H:%i:%s')", [req.body.LastUpdateTime], 'GoodsCode,ModelName,ShortName,TypeCode,BrandCode,DistrictNo,PackQuantity,LeastPackQuantity,Description,EnableFlag').then(ret=>{
     res.send(ret)
   }).catch(err=>{
     res.send(err)
@@ -57,7 +57,7 @@ router.get('/getGoods/:pid/:psize',function(req, res, next){
 
 router.post('/SyncGoods', function(req, res, next){
   var datas = req.body;
-  for(var i = 0; i < datas.length; i++) datas[i].LastUpdateTime = new Date();
+  for(var i = 0; i < datas.length; i++)datas[i].UpdateDate = new Date();
   dbtool.replaceBatchModel('Goods', datas, 'ID', 'GoodsCode').then(ret=>{
     res.send(ret)
   }).catch(err=>{
@@ -66,7 +66,7 @@ router.post('/SyncGoods', function(req, res, next){
 })
 
 router.get('/LastUpdateGoodss', function(req, res, next){
-  dbtool.getWhere('Goods', 'LastUpdateTime >= ?', req.params.lasttime).then(ret=>{
+  dbtool.getWhere('Goods', 'UpdateDate >= ?', req.params.lasttime).then(ret=>{
     res.send(ret)
   }).catch(err=>{
     res.send(err)

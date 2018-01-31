@@ -17,5 +17,7 @@ router.use('/h5', require('../controller/h5'))
 router.use('/api/goods', require('../controller/goods'))
 router.use('/api/guest', require('../controller/guest'))
 router.use('/api/vendor', require('../controller/vendor'))
+router.use('/api/brand', require('../controller/brand'))
+router.use('/api/goodstype', require('../controller/goodstype'))
 
 module.exports = router

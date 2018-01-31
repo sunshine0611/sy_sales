@@ -214,12 +214,12 @@ exports.getAll = function(table){
   return defer.promise
 }
 
-exports.getWhere = function(table, where, vals){
+exports.getWhere = function(table, where, vals, cols){
   var defer = Q.defer()
   if (tools.isNullOrEmpty(table)){
     return defer.reject(tools.createError("table should not be null"))
   }
-  run(`select * from ${table} ` + (tools.isNullOrEmpty(where) ? '' : where), [vals], function(err, result, fields){
+  run(`select ` + (tools.isNullOrEmpty(cols) ? '*' : cols) + ` from ${table} ` + (tools.isNullOrEmpty(where) ? '' : 'where ' +  where), [vals], function(err, result, fields){
     return defer.resolve(!err ? {code:1, data:result} : {code:-1, data:err} )
   })
   return defer.promise

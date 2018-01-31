@@ -31,7 +31,11 @@
   $.ajax({
     url: "/api/guest/getGuests",
     success:function(data){
-      $("#guestList").append(template("tpl-guestlst-item", {guests:data}));
+      for(var i = 0; i < data.data.length; i++){
+        if (data.data[i].MobilePhone)
+          data.data[i].Phone = $.parseJSON(data.data[i].MobilePhone)[0];
+      }
+      $("#guestList").append(template("tpl-guestlst-item", {guests:data.data}));
     },
     error:function(){
     }
