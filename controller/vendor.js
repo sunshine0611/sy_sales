@@ -30,4 +30,12 @@ router.get('/LastUpdateVendors', function(req, res, next){
   })
 })
 
+router.get('/getVendors', function(req, res, next){
+  dbtool.getByPage('Vendor', '', [], 1, 20, 'id desc').then(ret=>{
+    res.send(ret)
+  }).catch(err=>{
+    res.send(err)
+  })
+})
+
 module.exports = router;

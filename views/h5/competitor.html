@@ -3,7 +3,7 @@
 <div>
   <header class="bar bar-nav">
     <button class="btn btn-link btn-nav pull-left" onclick="location.href='/h5/'"><span class="icon icon-left-nav"></span>Left</button>
-    <h1 class="title">客户</h1>
+    <h1 class="title">同行</h1>
   </header>
   <div class="content">
     <div class="input-group">
@@ -13,31 +13,26 @@
     <span id='last'>&nbsp;</span>
 
 <script id="tpl-guestlst-item" type="text/html" >
-{{each guests as guest i}}
+{{each competitors as competitor i}}
 <li class="table-view-cell">
-  <a class="push-right">
-    <span class="pull-left icon icon-person" style="color:#3071a9;"></span>
-    <strong>{{ guest.GuestName }}</strong>
-  </a>
+    <a class="push-right">
+        <span class="pull-left icon icon-person" style="color:#3071a9;"></span>
+        <strong>{{ competitor.CompetitorName }}</strong>
+    </a>
 </li>
 <li class="table-view-cell table-view-cell-content">
-  <span class="spanblock"><a class="btn-link" href="tel:{{ guest.Phone }}">电话：{{ guest.Phone }}</a></span>
-  <span class="spanblock">性别：{{ guest.Sex }}</span>
-  <span class="spanblock">地址：{{ guest.Address }}</span>
+    <span class="spanblock">法人：{{ competitor.LegalPerson }}</span>
+    <span class="spanblock"><a class="btn-link" href="tel:{{ competitor.Phone }}">电话：{{ competitor.Phone }}</a></span>
+    <span class="spanblock">地址：{{ competitor.Address }}</span>
+    <span class="spanblock">业务范围：{{ competitor.BusinessScope }}</span>
 </li>
 {{/each}}
 </script>
 <script id="pageScript" type="text/javascript">
-  function loadMoreData(){
-    pno++;
-    loadData()
-  }
   function loadData(){
-    loading = 1;
     $.ajax({
-      url: "/api/guest/getGuests?pno=" + pno,
+      url: "/api/guest/getGuests",
       success:function(data){
-        loading = 0;
         for(var i = 0; i < data.data.length; i++){
           if (data.data[i].MobilePhone)
             data.data[i].Phone = $.parseJSON(data.data[i].MobilePhone)[0];
@@ -45,12 +40,10 @@
         $("#guestList").append(template("tpl-guestlst-item", {guests:data.data}));
       },
       error:function(){
-        loading = 0;
       }
     })
   }
-  loadData()
-  window.loadMoreData = loadMoreData;
+  //loadData()
 </script>
   </div>
 </div>

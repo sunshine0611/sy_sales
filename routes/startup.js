@@ -19,5 +19,6 @@ router.use('/api/guest', require('../controller/guest'))
 router.use('/api/vendor', require('../controller/vendor'))
 router.use('/api/brand', require('../controller/brand'))
 router.use('/api/goodstype', require('../controller/goodstype'))
+router.use('/api/syncitem', require('../controller/syncitem'))
 
 module.exports = router

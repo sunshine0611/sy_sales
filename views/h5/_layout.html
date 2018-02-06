@@ -7,7 +7,7 @@
 
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <%- Loader('/h5/css/ratchet.min.css').css('/h5/css/ratchet.min.css').done({}, config.domain, !config.debug) %>
+  <%- Loader('/h5/css/ratchet.min.css').css('/h5/css/ratchet.min.css').css('/h5/css/main.css').done({}, config.domain, !config.debug) %>
   <script type="text/javascript"> var appRootPath = '<%= config.domain %>';</script>
   <%- Loader('/h5/js/ratchet.min.js').js('/h5/js/jquery.min.js').js('/h5/js/ratchet.min.js').js('/art/template.js').js('/h5/js/main.js').done({}, config.domain, !config.debug) %>
 </head>

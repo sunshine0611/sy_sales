@@ -15,7 +15,7 @@ router.post('/SyncGuests', function(req, res, next){
 })
 
 router.get('/getGuests', function(req, res, next){
-  dbtool.getByPage('Guest', '', [], 1, 20, 'id desc').then(ret=>{
+  dbtool.getByPage('Guest', '', [], req.query.pno, 20, 'id desc').then(ret=>{
     res.send(ret)
   }).catch(err=>{
     res.send(err)

@@ -39,6 +39,14 @@
       "update_sql":"",
       "query_page_sql":"",
       "query_all_sql":""
+    },
+    {
+      "table_name":"SyncItem",
+      "create_sql":"create table if not exists SyncItem (ID int(11) not null auto_increment, SyncCode varchar(50) not null, BizType varchar(30) not null, Action varchar(30) not null, Data mediumtext null, EnableFlag int, CreateDate datetime, UpdateDate datetime, primary key(`ID`), unique key `idx_SyncItem_SyncCode` (`SyncCode`))",
+      "insert_sql":"",
+      "update_sql":"",
+      "query_page_sql":"",
+      "query_all_sql":""
     }
   ]
 }
